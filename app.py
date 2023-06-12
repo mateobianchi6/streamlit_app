@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 st.title("Mateo's App")
@@ -17,8 +18,6 @@ st.subheader("Then choose a column and visit the tabs to analyze it!")
 col = st.selectbox("Choose a column", df.columns)
 
 tab1, tab2, tab3,  = st.tabs(['At First Glance', 'Numerical Analysis', 'Categorical Analysis'])
-
-#print(df.info)
 
 with tab1:
     st.header("At First Glance")
@@ -37,7 +36,26 @@ with tab2:
         st.text(df[col].describe())
 
         st.subheader('Distribtution Plot')
-        dist = plt.hist(df[col])
-        st.write(dist)
+        fig = plt.figure()
+        sns.histplot(df[col], kde=True, bins=40)
+        plt.xlim(np.nanpercentile(df[col], 1), np.nanpercentile(df[col], 99))
+        st.pyplot(fig)
     else:
-        st.text('Not the right type of variable')
+        st.text('Not the right type of variable, see Categorical Analysis!')
+
+with tab3:
+    st.header('Categorical Analysis')
+    if df[col].dtype == 'object':
+        st.subheader('Category Table')
+        values, counts = np.unique(df[col], return_counts=True)
+        table_data = zip(values, counts/500)
+        st.table(table_data)
+        st.subheader('Category Barplot')
+        #values, counts = np.unique(df[col], return_counts=True)
+        fig = plt.figure()
+        ax = fig.add_axes((0,0,1,1))
+        ax.bar(values, counts)
+        plt.xticks(rotation='vertical')
+        st.pyplot(fig)
+    else:
+        st.text('Not the right type of variable, see Numerical Analysis!')
